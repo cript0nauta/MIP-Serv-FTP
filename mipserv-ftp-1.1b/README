@@ -1,0 +1,168 @@
+---Documentación de MIP-Serv FTP v1.1 BETA---
+          ---by sh4r3m4n---
+
+----------------------------------
+Cambios respecto a la versión 1.0:
+ .El server_show_actions.py tiene la propiedad permitir_bounce que anteriormente había que instertarla manualmente para que el programa funcione
+ .El server se cierra mejor
+ .Se pueden listar directorios correctamente
+ .Se obliga a especificar el parámetro class_cliente al iniciar la clase servidor
+----------------------------------
+
+MIP-Serv FTP es un servidor del conocido Protocolo de Transferencia de Archivos, y el primer programa del proyecto MIP-Serv.
+
+La documentación estará dividida en cinco partes:
+  1. Configuración del servidor
+  2. Ejecución del servidor
+  3. Funciones y variables de la librería lib_mipftp.py
+  4. Creación de comandos SITE
+  5. Creación de eventos y clases derivadas
+
+
+--------------------------
+Configuración del servidor
+--------------------------
+Lo que programé realmente es la clase del servidor, con todas sus funciones no el servidor en sí, por lo que el servidor a ejecutarse debe ser escrito en Python, junto con
+su configuración. Ya que es la primera versión, tendrá pocas opciones lo que hacen al servidor basante sencillo y no resultará difícil configurarlo.
+
+Este servidor tiene instanciar la clase servidor de lib_mipftp, y pasarle como parámetro un diccinario de configuración. Esto se logra importándola antes
+Si no me explico bien se puede ver esto en el fichero incluido server.py
+Este diccionario tiene los siguientes parámetros obligatorios:
+  site:			Diccionario con comandos SITE. Será explicado posteriormente, por lo que con darle de valor {}(diccionario vacío) bastará
+  server_name:		El nombre del servidor que estará como banner. Cabe aclarar que el programa se encuentra bajo licencia Creative Commons, por lo que se le deberá
+			hacer una atribución, y esta es la manera más fácil de hacerlo
+  run_user:		El usuario con el que se correrá el programa luego de escuchar en el socket, para evitar que siempre se tenga que usar el usuario root.
+			Si es False, continuará con la ejecución con el usuario que ejecutó el programa
+  permitir_bounce:	Permite el Bounce Attack, por lo que ES ALTAMENTE RECOMENDADO DEJARLO EN FALSE, al menos que se estén testeando ataques
+  ip:			La IP local con la que se desea escuchar. Si se quieren usar todas se puede dejar como un string en blanco
+  ip_pasv:		La IP que se indica cuando un cliente entra en modo pasivo. Esta deberá ser accesible por todos los clientes para tener un correcto funcinamiento
+  puerto:		El puerto en el que escucha el servidor
+  rango_pasv:		Array con los puertos a los que se le permite ingresar el modo pasvo al servidor. Es recomendable usar la función range para no tener que incluirlos
+			manualmente, y que sean una amplia cantidad ya que sinó se podrían adivinar
+  max_cons:		El máximo de conexiones permitidas por el servidor
+  max_size:		El tamaño máximo para la recepción de datos indicado en bytes
+  STOU_prefix:		El prefijo que se le asignan a los archivos generados por el comando STOU
+  usuarios:		Un diccionario con los nombres de usuario, su contraseña y una variable que indica si tiene acceso de escritura al sistema de ficheros
+			Formato: cada usuario es el nombre de la clave, y su valor es un array o tupla que contiene como valores su contraseña, y la variable
+			  que indica si tiene acceso de escritura al sistema de ficheros.
+			Si la variable que indica la contraseña tiene un valor False, cualquier contraseña introducida será aceptada, para así generar usuarios anónimos.
+  errores:		Diccionario que contiene el mensaje a mostrar con cada código de error. Cada clave es un código, donde este, de tipo entero, será su identificador,
+			y su valor será una cadena con el mensaje.
+			Todos los códigos son obligatorios. Los que se usan, son: 150, 200, 214, 220, 221, 226, 227, 230, 250, 257, 350, 425, 331, 500, 501, 502, 530, 550 y 553
+
+----------------------
+Ejecución del servidor
+----------------------
+Para ejecutarlo, bastará con llamar al script servidor llamado anteriormente. Si se está usando Linux y se quiere escuchar en un puerto inferior a 1024(incluyendo el 21), muy
+probablemente será necesario ejecutar el script con privilegios se root. Suponiendo que tenemos el usuario indicado, habría que ejecutar el comando
+  /path/archivo_servidor.py
+Esto hará que la consola se quede con el programa abierto hasta que sea cerrado manualmente, lo que resulta algo incómodo. Lo mejor es ejecutar esta otro comando
+  /path/archivo_servidor.py &
+Que lo que hace es que se ejecute en segundo plano
+
+
+--------------------------------------------------
+Funciones y variables de la librería lib_mipftp.py
+--------------------------------------------------
+Si deseamos crear comandos SITE y eventos, será necesario conocer lo que nos deja hacer esta librería.
+Esto se mostrará en forma de árbol para que sea más legible
+
+Clase servidor:
+  Eventos:
+    escuchar(self,ip,puerto):	Se produce cuando se el socket principal escucha conexiones. Sus parámetros son la instancia de la clase y la IP y puerto en los que se escucha
+    nueva_con(self,datos):	Se produce cuando un cliente remoto establece una conexión. Se le pasa como parámetro un array que indica ['ip_remota',puerto_remoto]
+    con_close(self,datos):	Se produce cuando un cliente remoto cierra una conexión
+    interrupcion(self):		Se produce cuando hay una interrupción en el servidor
+    error_bindeando(self):	Se produce cuando el servidor no puede poner a escuchar su socket principal
+  Variables(pueden ser llamadas con self.variable):
+    conf:	El array de configuración
+    site:	El diccionario con comando SITE, explicados posteriormente
+Clase cliente(un servidor instancia una de estas por cada conexión entrante):
+  Eventos:
+    pedir_archivo(self,nombre):				Se produce cuando un cliente quiere leer el contenido de un fichero. Se le pasa como parámetro su nombre
+    subir_archivo(self,nombre):				Igual de la anterior, pero se produce cuando el cliente quiere subir un archivo
+    error_archivo(self,nombre,acceso,[destino='']):	Se produce cuando hay un error procesando un archivo. Sus parámetros son:
+							  nombre:	El nombre del archivo
+							  acceso:	El tipo de acceso que produjo el error. Valores:
+									  1: lectura
+									  2: escritura
+									  3: escritura en modo append
+									  4: borrado
+									  5: renombrado
+							  destino:	Si acceso==5 destino tiene el valor del archivo de destino a renombrar, y nombre el del origen
+    cambiar_carpeta(self,carpeta):			Se produce cuando un cliente cambia su directorio de trabajo. Su nombre se ve indicado en el parámetro carpeta
+    intento_login(self,user,contra,exitoso):		Se produce cuando un cliente intenta loguearse. Los parámetros user y contra son el usuario y la contraseña,
+							y exitoso indica si se logueó correctamente
+    comando_ejecutado(self,comando,parametros):		Se produce cuando se ejecuta cualquier comando, pasándole como parámetros el comando y los parámetros de él
+    setear_data_con(self,metodo,ip,puerto):		Se produce cuando un cliente define el tipo de conexión de datos. IP y puerto son los datos de la conexión, y metodo es
+							  1:	Método PASV
+							  2:	Método PORT
+    logout(self,user,datos):				Se produce cuando un cliente cierra sesión. User es, si lo hay, el usuario, y datos equivalen a un array con la IP y
+							el puerto remoto
+  Variables:
+    sock:		El manejador del socket cliente
+    datos:		El array con IP y puerto remotos
+    servidor:		La clase servidor que lo instanció
+    logueado:		Boolean que indica si ya se logueó
+    user:		Indica el usuario con el que está logueado. Si no lo está, tendrá el valor de una cadena de texto vacía
+    acceso_escritura:	Boolean que indica si el usuario tiene acceso de escritura al sistema de ficheros
+    path:		El directorio en el que está trabajando el usuario
+    conf_path:		El directorio base asignado al usuario
+    tipo_data_con:	Indica el tipo de conexión de dato, valiendo 0 si no se ha establecido, 1 para PASV y 2 para PORT
+    datos_data_con:	Array con los datos del cliente de la conexión de datos
+    renombrar:		Variable temporal que indica el origen de un fichero a renombrar
+    seek:		Indica la posición en la que se iniciará la lectura de un fichero
+Funciones de la librería(de ninguna clase):
+  ip_normal_a_ftp(ip_normal):				Convierte una IP al formato de FTP
+  ip_ftp_a_normal(ip_ftp):				Convierte una IP en el formato FTP a una normal
+  puerto_ftp_a_normal(puerto_ftp):			Convierte un puerto en el formato FTP a uno normal
+  puerto_normal_a_ftp(puerto_normal):			Convierte un puerto normal al formato de FTP
+  mostrar_error(h_cliente,codigo):			Muestra un mensaje de error al cliente indicado en h_cliente según el codigo pasado como parámetros
+  enviar_data_con(h_cliente,[datos,[recibir]]]):	Envia o recibe, via la conexión de datos de h_cliente. Si recibir==True se recibirán datos, sino se enviará
+							el texto indicado en datos
+  tienepermisos(cliente,comando):			Davuelve True si h_cliente tiene permisos de ejecución de comando, sino devuelve False
+
+
+-------------------------
+Creación de comandos SITE
+-------------------------
+Los comandos SITE son comandos especiales creados por el usuario o el servidor, que no son necesarios para que el servidor funcione correctamente. Estos se listan
+ejecutando el comando HELP, y se llaman ejecutando el comando SITE NOMBRE_COMANDO parametros
+Una vez leída la sección anterior, resultará fácil crear uno.
+El primer paso será crear una función cualquiera a la cual se le pasen tres parámetros: el handle al cliente que la ejecuta, el nombre del comando SITE y sus parámetros.
+  Ejemplo:
+    def misite(h_cliente,comando,params):
+      #Muestra un error 200 de prueba
+      lib_mipftp.mostrar_error(h_cliente,200)
+  Este código debe ser definido antes de la definición del diccionario de configuración para que pueda ser leído
+El segundo será, agregar a la variable de configuración, en el diccinario site, una clave cuyo identificador sea una cadena con el nombre del comando, y su valor la función.
+  Ejemplo:
+    configuración={
+      ...,
+      "site":{"SITEEJEMPLO",misite},
+      ...
+    }
+  Con esto cuando ejecutemos SITE SITEEJEMPLO se nos mostrará un error 200
+Si no me expliqué bien, en el server.py, al principio del código hay una comando SITE WHOAMI de ejemplo
+
+
+--------------------------------------
+Creación de eventos y clases derivadas
+--------------------------------------
+En esta sección se trabajarán la creación de eventos, pero para eso hay que hacer una clase derivada del servidor y cliente.
+En un servidor que no tenga clases derivadas el código sería el siguiente:
+  servidor=lib_mipftp.servidor(array_de_configuracion)
+Si queremos crear una clase derivada con eventos, este sería el código:
+  #Definición de clases derivadas
+  class servidor_derivado(lib_mipftp.servidor):
+    """Clase derivada del servidor original"""
+    def evento_del_servidor(self,parametro1,parametro2,parametroN):
+      #Codigo
+  class cliente_derivado(lib_mipftp.cliente):
+    """Clase derivada del cliente original"""
+    def evento_del_cliente(self,parametro1,parametro2,parametroN):
+      #Codigo
+
+  #Instanciación
+  servidor=servidor_derivado(array_de_configuracion,cliente_derivado) #Se le agrega un nuevo parámetro, que es un handle a la clase derivada de cliente
+Si no me expliqué bien, se puede ver un ejemplo en server_show_actions.py

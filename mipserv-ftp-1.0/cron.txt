@@ -1,0 +1,82 @@
+---Cronología de Mip-Serv FTP---
+      ---by sh4r3m4n---
+
+02/07/11	Inicio de programacion de MIP-Serv FTP v1.0: creacion de clases, funciones y eventos, con contenido interior pass(palabra reservada en Python que no hace nada)
+		Creación de las funciones de lib_mipftp.py
+		Creación del server principal(server.py)
+		Creación básica de la clase servidor: socket principal y pruebas con cliente
+
+04/07/11	Mejora en el código: se fixean los hilos para poder terminar bien el programa
+
+08/07/11	Creacion de manejador de parametros y comandos
+		Interpretador de comandos con error 502 no implementado
+		Creacion de comandos USER, PASS
+
+09/07/11	Creacion de funcion mostrar_error
+		Agregado de socket.error al except del cliente
+		Limitado el max_sixe de la configuración por defecto a 1 MB
+		Creacion de comandos NOOP, PWD, CWD, PORT, PASV, LIST
+		  El CWD no valida si el directorio existe
+		  El LIST devuelve algo fijo, es solo para pruebas
+
+12/07/11	Comprensión del comando LIST(no se especifica detalladamente en el RFC)
+		Buscado de funciones que ayuden con el comando list(no encontre para permisos ni para enlaces, para fecha es dificil)
+		Mejora de CWD: no se puede acceder a carpetas que no existan ni sean un archivo
+
+14/07/11	Creacion de funcion de envio de informacion por la conexion de datos
+		Creacion de comando NLST
+
+15/07/11	Creacion del comando LIST
+
+17/07/11	Creacion del comando STAT
+
+18/07/11	Reparacion de error de listado de archivos
+		Agregado de evento error_carpeta al listar archivos
+		Creacion del comando RETR
+		Agregado de la opcion de recibir datos a la funcion enviar_data_con
+		Creacion del comando STOR
+
+21/07/11	Fix del listado de archivos: antes no se podian listar archivos, ahora si
+
+22/07/11	Creacion del comando DELE, RNFR y RNTO
+
+25/07/11	Se remueven algunas lineas no importantes del codigo de los comandos que usan el sistema de archivos
+		Creacion del comando MKD
+
+27/07/11	Creacion del comando RMD y STOU
+
+27/07/11	Creacion del comando APPE, REST
+		Agregado de codigo de SEEK al comando RETR para tener compatibilidad con REST
+
+31/07/11	Creacion del comando QUIT
+		Creacion del evento logout de cliente
+		Creacion de la variable self.site de servidor
+
+01/08/11	Creacion de la variable server_name en el archivo de configuracion
+		Se repara un error en el que el comando STAT devolvia 501 en vez de 211
+		Creacion del comando HELP
+
+02/08/11	Creacion del comando SITE
+
+04/08/11	Eliminacion del 502 no implementado en el comando SIZE. Ya no es reconicido
+		Implementacion de variable usuarios de la configuracion y modificacion ligera su formato
+		Cambio en el login: ya es multiusuario, pero con los mismos privilegios
+		Creacion de variable self.conf_path de cliente en reemplazo a self.servidor.conf['path']
+		Cada usuario tiene su propio path y a cada uno se le indica si tiene acceso de escritura
+		Se permiten cuentas anonimas(sin contraseña) si la clave especificada en la conf el False
+		Los comandos SITE se definen en la configuracion en vez de en lib_mipftp
+		Creacion de la funcion tienepermisos de lib_mipftp
+		Se reemplaza self.logueado por tienepermisos(self,comando) para control de escritura de ficheros y el mostrar error 530 por el error devuelto
+
+05/08/11	Eliminacion de eventos innecesarios
+		Creacion de agregado ejemplo y comando SITE WHOAMI de ejemplos
+
+06/08/11	Escaneo de vulnerabilidades con Nessus
+		Creacion de la opcion de permitir bounce en la configuracion
+		Se previene Bounce Attack
+
+08/08/11	Inicio de la documentación de Mip-Serv FTP
+
+09/08/11	Se añade la variable de configuración run_user para evitar escalada de privilegios
+		Finalización de la documentación
+		Empaquetaado y distribución del programa

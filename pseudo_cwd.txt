@@ -1,0 +1,26 @@
+---Pseudocodigo de la funcion de cambio de directorio de Mip-Serv FTP---
+                             ---by sh4r3m4n---
+
+si esta logueado:
+  se usan y calculan variables path, conf_path(tiene / al final), rel_path y destino
+  si el primer de destino caracter no es /:
+    destino=rel_path+destino
+
+  split=split de destino por /
+  dirs=array
+  hacer en dir con cada split:
+    si dir no esta vacio ni es . :
+      si dir es .. :
+	quitar ultimo elemento de dirs si len>0
+      sino:
+	appendear dir a dirs
+
+  si len(dirs)==0:
+    dir=''
+  sino:
+    dir=joineado de dirs por /
+
+  path=conf_path+dir
+
+sino:
+  mostrar 530

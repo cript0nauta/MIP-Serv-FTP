@@ -1,0 +1,82 @@
+---Plan de MIP-Serv FTP---
+    ---by sh4r3m4n---
+Constara de los siguientes archivos:
+  lib_mipftp.py:
+    el codigo general del servidor en una clase
+    clases:
+      servidor: el servidor normal
+	funciones:
+	  __init__(conf): el inicio, para que se cargue
+	  de eventos: estas funciones estan en blanco ya que principalmente no harian nada, pero para un plugin, heredando de la clase y reescribiendo la funcion le servira
+	              bastante.
+	    escuchar(ip,puerto)
+	    nueva_con(datos)
+	    con_close(datos)
+	    interrupcion()
+	    error_bindeando
+	variables:
+	  conf #La configuracion del servidor
+	  site #Diccionario con el nombre y funcion de cada comando site. ejemplo: "{'NOM1':funcion1,'NOM2':funcion2,'NOMN':funcionN}"
+      cliente: el hilo que maneja cada cliente
+	funciones:
+	  __init__(sock,h_servidor): para que se cargue el hilo, se le pasa como parametro el sock.accept. el otro es un handle al servidor que se le puede pasar self
+	  run: la funcion del hilo
+	  de eventos:
+	    pedir_archivo(nombre)
+	    subir_archivo(nombre)
+	    error_archivo(nombre,tipo_acceso) #tipo_acceso=1->read 2->write 3->append 4->del 5->rename
+	    cambiar_carpeta(carpeta)
+	    error_carpeta(carpeta,tipo_acceso) #tipo_acceso=1->cambiar 2->crear 3->borrar 4->renombrar 5->listar
+	    error_socket(errores)#errores=el except
+	    intento_login(user,contra,exitoso)
+	    error_comando(comando,params)
+	    comando_ejecutado(comando,params)
+	    setear_data_con(metodo,ip,puerto) #metodo=1->port 2->pasv
+	    logout(user,datos)
+	variables:
+	  sock
+	  datos
+	  servidor #handle al servidor que lo maneja
+	  logueado
+	  user
+	  acceso_escritura
+	  path
+	  conf_path
+	  tipo_data_con #0 para indefinido, 1 para PASV y 2 para PORT
+	  datos_data_con
+	  renombrar
+	  seek
+    funciones:
+      ip_normal_a_ftp
+      ip_ftp_a_normal
+      puerto_normal_a_ftp
+      puerto_ftp_a_normal
+      mostrar_error(h_cliente,codigo)
+      enviar_por_data_con(self,datos)
+      tienepermisos(cliente,comando)
+
+  conf_miftp.py:
+    la libreria que sirve para cargar la configuracion del programa
+    funciones:
+      arc_a_array(arc)#Se le pasa el nombre de un archivo y convierte la configuracion del archivo en una array
+    parametros de configuracion:
+      ip
+      puerto
+      path
+      login
+      usuarios
+	{
+	  "nombre_usuario":["pass","/path/1",True],
+	  "otro_usuario":["pass","/path/2",True],
+	  "anonimo":[False,"/anonimo",False]
+	}
+	#Si la pass el False, cualquiera es valida. El tercer parametro indica si se tiene acceso de escritura
+      rango_pasv #tupla con los puertos passive. ejemplo: (18000,18001,18002)
+      errores #tupla de diccionarios con el codigo y el mensaje. ejemplo: {220:"MIP-Serv FTP",502:"Orden no implementada"}
+      max_cons
+      max_size #Tamaño maximo de un lectura
+      server_name #El nombre del server
+      ip_pasv
+      permitir_bounce
+  server.py:
+    el cargador del servidor, usando la libreria del servidor en si y de configuracion

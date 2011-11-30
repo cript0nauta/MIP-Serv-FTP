@@ -1,0 +1,13 @@
+drwxr-xr-x    7 55         55                512 Jul  9 04:40 .
+drwxr-xr-x    7 55         55                512 Jul  9 04:40 ..
+-rw-r--r--    1 55         55                449 Feb 18  2010 .banner
+drwxr-xr-x    8 55         55                 15 Jul  9 17:04 debian
+d-wx--x--x    2 104        55                774 Jul  8 11:35 incoming
+-rw-r--r--    1 55         55         1128920753 Jul  9 04:38 ls-lR
+-rw-r--r--    1 55         55          204477331 Jul  9 04:40 ls-lR.Z
+-rw-r--r--    1 55         55          139167810 Jul  9 04:39 ls-lR.gz
+drwxr-xr-x    2 55         55               3072 Jun 27 12:03 mirror
+d--x--x--x   14 104        55                 14 Jan  3  2011 outgoing
+drwxr-xr-x    2 55         55                512 Feb 24  2010 pub
+drwxr-xr-x   69 55         55                 69 Jun 16 14:57 sites
+-rw-r--r--    1 55         55                 86 Jan 18  2010 welcome.msg

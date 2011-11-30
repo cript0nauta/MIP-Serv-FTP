@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+---Pasos para convertir Mip-Serv FTP v1.1 Beta a un troyano---
+                     ---by sh4r3m4n--- 
+
+Requisitos de la víctima:
+ Tener isntalado un sistema Linux
+ Tener Python y sus librerías básicas funcionando correctamente
+
+1) Juntar contenido en un solo archivo
+2) Crear una cuenta con privilegios totales
+3) Comando SITE para ejecución de comandos
+4) Convirtiendo el servidor FTP en un servidor FTP inverso(invento propio)
+5) Permitir Bounce Attack y modificar el código para tunelizar sesiones TCP(invento propio)
+
+***Juntar contenido en un solo archivo***
+Este es el paso mas sencillo, que consiste en que, en vez de tener 2 archivos necesarios para el buen funcionamiento del servidor FTP normal(la librería y el servidor),
+poder juntarlos y así necesitar solamente un archivo por lo que se hace más fácil su distribución.
+Para lograr esto lo se puede hacer es crear
